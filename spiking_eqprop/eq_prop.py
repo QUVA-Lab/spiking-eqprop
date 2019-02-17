@@ -235,7 +235,7 @@ def run_eqprop_training_update(x_data, y_data, layer_states: Sequence[IDynamicLa
         negative_prop_direction, positive_prop_direction = prop_direction, prop_direction
 
     rng = get_rng(rng)
-    this_beta = beta*(torch.randint(2, size=())*2-1) if random_flip_beta else beta
+    this_beta = beta*(torch.randint(2, size=()).float()*2-1) if random_flip_beta else beta
     negative_states = last(run_negative_phase(x_data=x_data, layer_states=layer_states, n_steps=n_negative_steps, prop_direction=negative_prop_direction))
     positive_states = last(run_positive_phase(x_data=x_data, layer_states=negative_states, beta=this_beta, y_data=y_data, n_steps=n_positive_steps, prop_direction=positive_prop_direction))
     if splitstream:

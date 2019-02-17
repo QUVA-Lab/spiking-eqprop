@@ -4,8 +4,9 @@ from matplotlib import pyplot as plt
 from artemis.general.should_be_builtins import unzip
 from artemis.plotting.expanding_subplots import add_subplot, vstack_plots, set_figure_border_size
 from artemis.plotting.pyplot_plus import plot_stacked_signals, event_raster_plot, stemlight
-from petes_nn_factory.speqprop_aistats_torch.quantized_eqprop import IStepSizer
-from petes_nn_factory.speqprop_aistats_torch.quantized_eqprop import create_step_sizer, PredictiveEncoder, \
+from spiking_eqprop.pytorch_helpers import to_default_tensor
+from spiking_eqprop.quantized_eqprop import IStepSizer
+from spiking_eqprop.quantized_eqprop import create_step_sizer, PredictiveEncoder, \
     SigmaDeltaQuantizer, PredictiveDecoder
 from spiking_eqprop.synthesized_signals import lowpass_random
 import torch
@@ -17,23 +18,25 @@ def demo_create_signal_figure(
         lambda_schedule = '1/t**.75',
         eps_schedule = '1/t**.4',
         n_samples = 200,
-        seed = 1247,
+        seed = 1234,
         input_convergence_speed=3,
         scale = 0.3,
         ):
     rng = np.random.RandomState(seed)
+    torch.manual_seed(seed)
+    w = torch.tensor(w)
 
-    varying_sig = lowpass_random(n_samples = n_samples, cutoff=0.03, n_dim=len(w), normalize=(-scale, scale), rng=rng)
-    frac = 1-np.linspace(1, 0, n_samples)[:, None]**input_convergence_speed
-    x = np.clip((1-frac)*varying_sig + frac*scale*rng.rand(3), 0, 1)
-    true_z = [s for s in [0] for xt in x for s in [np.clip((1-eps)*s + eps*xt.dot(w), 0, 1)]]
+    varying_sig = to_default_tensor(lowpass_random(n_samples = n_samples, cutoff=0.03, n_dim=len(w), normalize=(-scale, scale), rng=rng))
+    frac = to_default_tensor(1-np.linspace(1, 0, n_samples)[:, None]**input_convergence_speed)
+    x =  torch.clamp((1-frac)*varying_sig + frac*scale*torch.rand(3), 0, 1)
+    true_z = [s for s in [0] for xt in x for s in [torch.clamp((1-eps)*s + eps*xt @ w, 0, 1)]]
 
     # Alternative try 2
     eps_stepper = create_step_sizer(eps_schedule)  # type: IStepSizer
     lambda_stepper = create_step_sizer(lambda_schedule)  # type: IStepSizer
     encoder = PredictiveEncoder(lambda_stepper=lambda_stepper, quantizer=SigmaDeltaQuantizer())
     decoder = PredictiveDecoder(lambda_stepper=lambda_stepper)
-    q = torch.tensor(np.array([qt for enc in [encoder] for xt in x for enc, qt in [enc(xt)]]))
+    q = torch.stack([qt for enc in [encoder] for xt in x for enc, qt in [enc(xt)]])
     inputs = [qt.dot(w) for qt in q]
     sig, epsilons, lambdaas = unzip([(s, eps, dec.lambda_stepper(inp)[1]) for s, dec, eps_func in [[0, decoder, eps_stepper]] for inp in inputs for dec, decoded_input in [dec(inp)] for eps_func, eps in [eps_func(decoded_input)] for s in [np.clip((1-eps)*s + eps*decoded_input, 0, 1)]])
 
@@ -44,18 +47,18 @@ def demo_create_signal_figure(
 
         ax = add_subplot()
 
-        sep = np.max(x)*1.1
-        plot_stacked_signals(x, sep=sep, labels=False)
+        sep = torch.max(x.flatten()).item()*1.1
+        plot_stacked_signals(x.numpy(), sep=sep, labels=False)
         plt.gca().set_color_cycle(None)
 
-        event_raster_plot(events = [np.nonzero(q[:, i])[0] for i in range(len(w))], sep=sep, s=100)
+        event_raster_plot(events = [np.nonzero(q[:, i].numpy())[0] for i in range(len(w))], sep=sep, s=100)
         ax.legend(labels=[f'$s_{i}$' for i in range(1, len(w)+1)], loc='lower left')
 
         ax = add_subplot()
         stemlight(inputs, ax=ax, label='$u_j$', color='k')
         # plt.plot(inputs, label='$u_j$', color='k')
         ax.axhline(0, color='k')
-        ax.tick_params(dim='y', labelleft='off')
+        ax.tick_params(axis='y', labelleft='off')
         ax.legend(loc='upper left')
         # plt.grid()
 
@@ -65,13 +68,13 @@ def demo_create_signal_figure(
         ax.plot(lambdaas, label='$\lambda$', color='b')
         ax.axhline(0, color='k')
         ax.legend(loc='upper right')
-        ax.tick_params(dim='y', labelleft='off')
+        ax.tick_params(axis='y', labelleft='off')
 
         ax = add_subplot()
         ax.plot(true_z, label='$s_j$ (real)', color='r')
         ax.plot(sig, label='$s_j$ (binary)', color='k')
         ax.legend(loc='lower right')
-        ax.tick_params(dim='y', labelleft='off')
+        ax.tick_params(axis='y', labelleft='off')
         ax.axhline(0, color='k')
 
     plt.show()

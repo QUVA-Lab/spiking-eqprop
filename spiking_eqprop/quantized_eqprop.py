@@ -117,7 +117,7 @@ class KestonsStepSizer(IStepSizer):
     b: float
     k: int = 1.
     last_err: torch.Tensor = None
-    initial_step: float = 1
+    initial_step: float = 1.
     avg: torch.Tensor = 0.
 
     def __call__(self, x):
@@ -126,7 +126,7 @@ class KestonsStepSizer(IStepSizer):
             k = self.k+1
         else:
             err = x - self.avg
-            k = self.k + (self.last_err*err < 0)
+            k = self.k + (self.last_err*err < 0).float()
         step_size = self.initial_step*(self.a/(self.b+k))
         avg = (1-step_size)*self.avg + step_size*x
         new_obj = KestonsStepSizer(initial_step=self.initial_step, last_err=err, k=k, avg=avg, a=self.a, b=self.b)
