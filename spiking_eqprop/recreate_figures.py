@@ -10,7 +10,7 @@ from artemis.plotting.range_plots import plot_sample_mean_and_var
 from spiking_eqprop.demo_quantized_convergence_with_perturbation import demo_quantized_convergence_perturbed
 from spiking_eqprop.demo_mnist_eqprop import report_score_from_result, X_1hid_vanilla
 from spiking_eqprop.demo_mnist_quantized_eqprop import experiment_mnist_eqprop_torch, X_polyscheduled_longer, \
-    X_osa_longer_1hid_psearch, X_osa_longer_gp_params
+    X_osa_longer_1hid_psearch, X_osa_longer_gp_params, X_polyscheduled_longer_psearch
 from spiking_eqprop.demo_signal_figure import demo_create_signal_figure
 
 
@@ -103,8 +103,8 @@ def create_gp_mnist_search_figure():
 
     # TODO: Replace the first one with the search with LONGER when it's done.
     searches = [
-        ('$\epsilon = \epsilon_0/t^{\eta_\epsilon}, \lambda = \lambda_0/t^{\eta_\lambda}$', 'experiment_mnist_eqprop_torch.1_hid.quantized.poly_schedule.epoch_checkpoint_period=None,n_epochs=1,quantizer=sigma_delta.parameter_search'),
-        # ('$\epsilon = \epsilon_0/t^{\eta_\epsilon}, \lambda = \lambda_0/t^{\eta_\lambda}$', X_polyscheduled_longer)
+        # ('$\epsilon = \epsilon_0/t^{\eta_\epsilon}, \lambda = \lambda_0/t^{\eta_\lambda}$', 'experiment_mnist_eqprop_torch.1_hid.quantized.poly_schedule.epoch_checkpoint_period=None,n_epochs=1,quantizer=sigma_delta.parameter_search'),
+        ('$\epsilon = \epsilon_0/t^{\eta_\epsilon}, \lambda = \lambda_0/t^{\eta_\lambda}$', X_polyscheduled_longer_psearch),
         # ('$\epsilon$ = OSA($\\bar\\nu$), $\lambda$', 'experiment_mnist_eqprop_torch.1_hid.adaptive_quantized.optimal.n_negative_steps=100,n_positive_steps=50.epoch_checkpoint_period=None,n_epochs=1.parameter_search')
         ('$\epsilon$ = OSA($\\bar\\nu$), $\lambda$', X_osa_longer_1hid_psearch)
     ]
@@ -127,7 +127,7 @@ def create_gp_mnist_search_figure():
 if __name__ == '__main__':
     # create_neuron_figure()
     # create_convergence_var_figure()
-    create_mnist_figure()
+    # create_mnist_figure()
     # create_gp_convergence_search_figure()
-    # create_gp_mnist_search_figure()
+    create_gp_mnist_search_figure()
     # {1: create_neuron_figure, 2: create_convergence_var_figure, 3: create_mnist_figure}[int(input('Which figure would you like to create?  (1-3) >> '))]()
