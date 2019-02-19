@@ -159,8 +159,9 @@ if __name__ == '__main__':
 
     # X_osa_1hid.get_variant(error_stepsize_target=0.332, lambdas=0.244).call()
     # experiment_mnist_eqprop_torch.browse(filterexp='has:1_hid')
+    experiment_mnist_eqprop_torch.browse()
     # experiment_mnist_eqprop_torch.browse(filterexp='tag:psearch')
     # experiment_mnist_eqprop_torch.browse(filterexp='~tag:dead&~tag:vanilla')
     # experiment_mnist_eqprop_torch.browse(filterexp='has:3_hid', raise_display_errors=False)
 
-    browse_experiments([X_1hid_vanilla, X_polyscheduled_longer_psearch, X_osa_longer_1hid_psearch, X_osa_longer_gp_params])
+    # browse_experiments([X_1hid_vanilla, X_polyscheduled_longer_psearch, X_osa_longer_1hid_psearch, X_osa_longer_gp_params])

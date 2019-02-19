@@ -4,6 +4,7 @@ from artemis.experiments import load_experiment
 from artemis.experiments.experiment_management import get_multiple_records
 from artemis.experiments.experiment_record_view import plot_hyperparameter_search
 from artemis.experiments.experiments import Experiment
+from artemis.general.duck import Duck
 from artemis.plotting.expanding_subplots import set_figure_border_size, add_subplot
 from artemis.plotting.pyplot_plus import outside_right_legend
 from artemis.plotting.range_plots import plot_sample_mean_and_var
@@ -81,7 +82,7 @@ def create_gp_convergence_search_figure():
         # ('$\epsilon = 1/\sqrt{t}$', 'demo_quantized_convergence_perturbed.nonadaptive.epsilons=1_SLASH_sqrt(t)'),
         ('$\epsilon = \epsilon_0/t^{\eta_\epsilon}, \lambda = \lambda_0/t^{\eta_\lambda}$', 'demo_quantized_convergence_perturbed.nonadaptive.poly_schedule.parameter_search'),
         ('$\epsilon$ = OSA($\\bar\\nu$)', 'demo_quantized_convergence_perturbed.adaptive.optimal.parameter_search'),
-        ('$\epsilon$ = OSA($\\bar\\nu$), $\lambda$', 'demo_quantized_convergence_perturbed.adaptive.optimal.parameter_search'),
+        ('$\epsilon$ = OSA($\\bar\\nu$), $\lambda$', 'demo_quantized_convergence_perturbed.adaptive.optimal.parameter_search_predictive'),
         ('$\epsilon$ = OSA($\\bar\\nu$), $\lambda = \lambda_0/t^{\eta_\lambda}$', 'demo_quantized_convergence_perturbed.adaptive.optimal.OSA-lambda_sched.parameter_search_predictive'),
     ]
 
@@ -129,5 +130,17 @@ if __name__ == '__main__':
     # create_convergence_var_figure()
     # create_mnist_figure()
     # create_gp_convergence_search_figure()
-    create_gp_mnist_search_figure()
-    # {1: create_neuron_figure, 2: create_convergence_var_figure, 3: create_mnist_figure}[int(input('Which figure would you like to create?  (1-3) >> '))]()
+    # create_gp_mnist_search_figure()
+    figure_funcs = {
+        1: create_neuron_figure,
+        2: create_convergence_var_figure,
+        3: create_mnist_figure,
+        4: create_gp_convergence_search_figure,
+        5: create_gp_mnist_search_figure,
+    }
+
+    print('\n'.join(f'  {k}: {v.__name__}' for k, v in figure_funcs.items()))
+    print("Select which figure/table the paper you'd like to create from the above list.  Some figures will take a very long time to create the "
+          "first time (because the experiment must run) but will be quick after that.")
+
+    figure_funcs[int(input('Which figure would you like to create?  (1-5) >> '))]()
